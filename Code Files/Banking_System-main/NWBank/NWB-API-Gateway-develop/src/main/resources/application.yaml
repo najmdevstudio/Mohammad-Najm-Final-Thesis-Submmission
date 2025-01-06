@@ -1,0 +1,42 @@
+server:
+  port: ${SERVER_PORT:8080}
+logging:
+  level:
+    org.springframework.cloud.gateway: debug
+jwt:
+  secret: ${SECRET_KEY}
+
+spring:
+  application:
+    name: apigateway-nwb
+  main:
+    web-application-type: reactive
+    allow-bean-definition-overriding: true
+  cloud:
+    gateway:
+      routes:
+        - id: accounts-nwb
+          uri: http://accounts-nwbank:8200/
+          predicates:
+            - Path=/accounts/**
+        - id: transaction-nwb
+          uri: http://transaction-nwbank:8300/
+          predicates:
+            - Path=/transactions/**
+        - id: authentication-nwb
+          uri: http://authentication-nwbank:8100/
+          predicates:
+            - Path=/auth/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "**"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+
+
+

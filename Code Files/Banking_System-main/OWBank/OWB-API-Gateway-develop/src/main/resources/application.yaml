@@ -1,0 +1,40 @@
+server:
+  port: ${SERVER_PORT:8080}
+logging:
+  level:
+    org.springframework.cloud.gateway: debug
+jwt:
+  secret: ${SECRET_KEY:YjWbDI1cSmUCAqTvlfdsKVhmeBjRV2DwpbBL7bynCxTKQeiNIQKr+1TeeXLlZkLeYoguNDhiQDOoy3kz2eHfbw==}
+
+spring:
+  main:
+    web-application-type: reactive
+    allow-bean-definition-overriding: true
+  cloud:
+    gateway:
+      routes:
+        - id: accounts-owb
+          uri: http://accounts-owb:8200/
+          predicates:
+            - Path=/accounts/**
+        - id: transaction-owb
+          uri: http://transaction-owb:8300/
+          predicates:
+            - Path=/transactions/**
+        - id: authentication-owb
+          uri: http://authentication-owb:8100/
+          predicates:
+            - Path=/auth/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "**"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+
+
+

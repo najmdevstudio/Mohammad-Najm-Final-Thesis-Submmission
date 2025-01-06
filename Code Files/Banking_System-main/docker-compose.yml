@@ -1,0 +1,310 @@
+###################################################################################################################################################
+# NW Bank Services                                                                                                                                #
+###################################################################################################################################################
+
+services:
+  gateway-nwbank:
+    build:
+      context: ./NWBank/NWB-API-Gateway-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: gateway-nwb
+    volumes:
+      - ./NWBank/NWB-API-Gateway-develop/target:/app/target
+    environment:
+      - SERVER_PORT=8080
+      - IFSC_CODE=NWB0001
+      - SECRET_KEY=ipm89FyJ5it9gIYB2E+FZM9il3e2mQtQsDqH/GBU4iJQF2lynN9xsM1vMSZmCHlpsUdzfIqvfqksVr4NoFTKpw==
+    ports:
+      - "8081:8080"
+    networks:
+      - nwnetwork
+    depends_on:
+      - authentication-nwbank
+      - accounts-nwbank
+      - transaction-nwbank
+
+  authentication-nwbank:
+    build:
+      context: ./NWBank/NWB-Authentication-Service-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: authentication-nwb
+    volumes:
+      - ./NWBank/NWB-Authentication-Service-develop/target:/app/target 
+    environment:
+      - SERVER_PORT=8100
+      - IFSC_CODE=NWB0001
+      - SECRET_KEY=ipm89FyJ5it9gIYB2E+FZM9il3e2mQtQsDqH/GBU4iJQF2lynN9xsM1vMSZmCHlpsUdzfIqvfqksVr4NoFTKpw==
+      - ROOT_USER=admin
+      - ROOT_PASSWORD=changeit
+      - DB_URL=jdbc:mysql://host.docker.internal:3306/NWBank
+      - DB_USERNAME=NWB_USER
+      - DB_PASSWORD=PASS@123
+      - DB_SCHEMA=NWBank
+    ports:
+      - "8082:8100"
+    networks:
+      - nwnetwork
+
+  accounts-nwbank:
+    build:
+      context: ./NWBank/NWB-Accounts-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: accounts-nwb
+    volumes:
+      - ./NWBank/NWB-Accounts-develop/target:/app/target 
+    environment:
+      - SERVER_PORT=8200
+      - IFSC_CODE=NWB0001
+      - DB_URL=jdbc:mysql://host.docker.internal:3306/NWBank 
+      - DB_USERNAME=NWB_USER
+      - DB_PASSWORD=PASS@123
+      - DB_SCHEMA=NWBank
+    ports:
+      - "8083:8200"
+    networks:
+      - nwnetwork
+
+  transaction-nwbank:
+    build:
+      context: ./NWBank/NWB-Transaction-Service-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: transaction-nwb
+    volumes:
+      - ./NWBank/NWB-Transaction-Service-develop/target:/app/target 
+    environment:
+      - SERVER_PORT=8300
+      - IFSC_CODE=NWB0001
+      - DB_URL=jdbc:mysql://host.docker.internal:3306/NWBank
+      - DB_USERNAME=NWB_USER
+      - DB_PASSWORD=PASS@123
+      - DB_SCHEMA=NWBank
+      - CLEARING_HOUSE_URL=http://clearinghouse:9090
+    ports:
+      - "8084:8300"
+    networks:
+      - nwnetwork
+
+
+###################################################################################################################################################
+# OW Bank Services                                                                                                                                #
+###################################################################################################################################################
+
+  gateway-owbank:
+    build:
+      context: ./OWBank/OWB-API-Gateway-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: gateway-owb
+    volumes:
+      - ./OWBank/OWB-API-Gateway-develop/target:/app/target 
+    environment:
+      - SERVER_PORT=8080
+      - IFSC_CODE=OWB0001
+      - SECRET_KEY=YjWbDI1cSmUCAqTvlfdsKVhmeBjRV2DwpbBL7bynCxTKQeiNIQKr+1TeeXLlZkLeYoguNDhiQDOoy3kz2eHfbw==
+
+    ports:
+      - "8085:8080"
+    networks:
+      - ownetwork
+    depends_on:
+      - authentication-owbank
+      - accounts-owbank
+      - transaction-owbank
+
+  authentication-owbank:
+    build:
+      context: ./OWBank/OWB-Authentication-Service-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: authentication-owb
+    volumes:
+      - ./OWBank/OWB-Authentication-Service-develop/target:/app/target 
+    environment:
+      - SERVER_PORT=8100
+      - IFSC_CODE=OWB0001
+      - SECRET_KEY=YjWbDI1cSmUCAqTvlfdsKVhmeBjRV2DwpbBL7bynCxTKQeiNIQKr+1TeeXLlZkLeYoguNDhiQDOoy3kz2eHfbw==
+      - ROOT_USER=admin
+      - ROOT_PASSWORD=changeit
+      - DB_URL=jdbc:mysql://host.docker.internal:3306/OWBank
+      - DB_USERNAME=OWB_USER
+      - DB_PASSWORD=PASS@123
+      - DB_SCHEMA=OWBank
+    ports:
+      - "8086:8100"
+    networks:
+      - ownetwork
+
+  accounts-owbank:
+    build:
+      context: ./OWBank/OWB-Accounts-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: accounts-owb
+    volumes:
+      - ./OWBank/OWB-Accounts-develop/target:/app/target 
+    environment:
+      - SERVER_PORT=8200
+      - IFSC_CODE=OWB0001
+      - DB_URL=jdbc:mysql://host.docker.internal:3306/OWBank
+      - DB_USERNAME=OWB_USER
+      - DB_PASSWORD=PASS@123
+      - DB_SCHEMA=OWBank
+    ports:
+      - "8087:8200"
+    networks:
+      - ownetwork
+
+  transaction-owbank:
+    build:
+      context: ./OWBank/OWB-Transaction-Service-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: transaction-owb
+    volumes:
+      - ./OWBank/OWB-Transaction-Service-develop/target:/app/target 
+    environment:
+      - SERVER_PORT=8300
+      - IFSC_CODE=OWB0001
+      - DB_URL=jdbc:mysql://host.docker.internal:3306/OWBank
+      - DB_USERNAME=OWB_USER
+      - DB_PASSWORD=PASS@123
+      - DB_SCHEMA=OWBank
+      - CLEARING_HOUSE_URL=http://clearinghouse:9090
+    ports:
+      - "8088:8300"
+    networks:
+      - ownetwork
+
+
+###################################################################################################################################################
+# PW Bank Services                                                                                                                                #
+###################################################################################################################################################
+  gateway-pwbank:
+    build:
+      context: ./PWBank/PWB-API-Gateway-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: gateway-pwb
+    volumes:
+      - ./PWBank/PWB-API-Gateway-develop/target:/app/target 
+    environment:
+      - SERVER_PORT=8080
+      - IFSC_CODE=PWB0001
+      - SECRET_KEY=JT+b6WIcwHkVbx2O7Iofw/wWEQpvK+Mpa9+MCvmS3s+ELYXF6zf4YCHa1OafQmTO3USTDEyyWnX1C4n/5BEk4w==
+
+    ports:
+      - "8089:8080"
+    networks:
+      - pwnetwork
+    depends_on:
+      - authentication-pwbank
+      - accounts-pwbank
+      - transaction-pwbank
+
+  authentication-pwbank:
+    build:
+      context: ./PWBank/PWB-Authentication-Service-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: authentication-pwb
+    volumes:
+      - ./PWBank/PWB-Authentication-Service-develop/target:/app/target 
+    environment:
+      - SERVER_PORT=8100
+      - IFSC_CODE=PWB0001
+      - SECRET_KEY=JT+b6WIcwHkVbx2O7Iofw/wWEQpvK+Mpa9+MCvmS3s+ELYXF6zf4YCHa1OafQmTO3USTDEyyWnX1C4n/5BEk4w==
+      - ROOT_USER=admin
+      - ROOT_PASSWORD=changeit
+      - DB_URL=jdbc:mysql://host.docker.internal:3306/PWBank
+      - DB_USERNAME=PWB_USER
+      - DB_PASSWORD=PASS@123
+      - DB_SCHEMA=PWBank
+
+    ports:
+      - "8090:8100"
+    networks:
+      - pwnetwork
+
+  accounts-pwbank:
+    build:
+      context: ./PWBank/PWB-Accounts-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: accounts-pwb
+    volumes:
+      - ./PWBank/PWB-Accounts-develop/target:/app/target 
+    environment:
+      - SERVER_PORT=8200
+      - IFSC_CODE=PWB0001
+      - DB_URL=jdbc:mysql://host.docker.internal:3306/PWBank
+      - DB_USERNAME=PWB_USER
+      - DB_PASSWORD=PASS@123
+      - DB_SCHEMA=PWBank
+    ports:
+      - "8091:8200"
+    networks:
+      - pwnetwork
+
+  transaction-pwbank:
+    build:
+      context: ./PWBank/PWB-Transaction-Service-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: transaction-pwb
+    volumes:
+      - ./PWBank/PWB-Transaction-Service-develop/target:/app/target 
+    environment:
+      - SERVER_PORT=8300
+      - IFSC_CODE=PWB0001
+      - DB_URL=jdbc:mysql://host.docker.internal:3306/PWBank
+      - DB_USERNAME=PWB_USER
+      - DB_PASSWORD=PASS@123
+      - DB_SCHEMA=PWBank
+      - CLEARING_HOUSE_URL=http://clearinghouse:9090
+    ports:
+      - "8092:8300"
+    networks:
+      - pwnetwork
+    
+  
+  clearinghouse:
+    build: 
+      context: ./NWB_ClearingHouse-develop
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: clearingHouse 
+    environment:
+      - SERVER_PORT=9090
+    ports:
+      - "9091:9090"
+    networks:
+      - nwnetwork
+      - ownetwork
+      - pwnetwork
+    depends_on:
+      - transaction-nwbank
+      - transaction-owbank
+      - transaction-pwbank
+
+networks:
+  nwnetwork:
+  ownetwork:
+  pwnetwork:
+    

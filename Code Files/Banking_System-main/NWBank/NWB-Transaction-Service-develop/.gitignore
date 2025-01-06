@@ -1,0 +1,4 @@
+/.idea
+/.env
+/target
+/src/java/resources/secrets.properties

@@ -1,0 +1,17 @@
+{
+  "name": "fabric-enrollment-scripts",
+  "version": "1.0.0",
+  "description": "Hyperledger Fabric enrollment scripts for admin and user",
+  "main": "enrollAdmin.js",
+  "scripts": {
+    "enrollAdmin": "node enrollAdmin.js",
+    "registerUser": "node registerUser.js"
+  },
+  "author": "Mohammad Najm",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@grpc/grpc-js": "latest",
+    "fabric-ca-client": "latest",
+    "fabric-network": "latest"
+  }
+}
