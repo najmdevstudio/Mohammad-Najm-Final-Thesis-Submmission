@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan">
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group">
+        <intProp name="ThreadGroup.num_threads">50</intProp>
+        <intProp name="ThreadGroup.ramp_time">10</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1000</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="User Parameters">
+          <collectionProp name="UserParameters.names">
+            <stringProp name="2012984453">accountsCsvPath</stringProp>
+            <stringProp name="383381863">NWB_PORT</stringProp>
+            <stringProp name="2126192198">OWB_PORT</stringProp>
+            <stringProp name="-425964763">PWB_PORT</stringProp>
+            <stringProp name="-996377165">NWB_TOKEN</stringProp>
+            <stringProp name="1491135668">OWB_TOKEN</stringProp>
+            <stringProp name="-316318795">PWB_TOKEN</stringProp>
+            <stringProp name="1054648891">DEFAULT_TOKEN</stringProp>
+            <stringProp name="1696469983">DEFAULT_PORT</stringProp>
+          </collectionProp>
+          <collectionProp name="UserParameters.thread_values">
+            <collectionProp name="-1669071358">
+              <stringProp name="1259963224">/home/najm/Documents/Accounts/Accounts.csv</stringProp>
+              <stringProp name="1716209">8081</stringProp>
+              <stringProp name="1716213">8085</stringProp>
+              <stringProp name="1716217">8089</stringProp>
+              <stringProp name="1507606336">eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzQ2MzcxNzA0LCJleHAiOjE3NDY0NDM3MDR9.U1FC5yDHvruSCnsOwOoJp0jf-n0wrvW3U3sbVqIB5mg</stringProp>
+              <stringProp name="-210568950">eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzQ2MzcxNzMwLCJleHAiOjE3NDY0NDM3MzB9.1ANVBSedYnQM_QlXbTB_H4R0S-P3diYbLXhhdHLGnsI</stringProp>
+              <stringProp name="-1903095548">eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzQ2MzcxNzU0LCJleHAiOjE3NDY0NDM3NTR9.QugRV2NATgIz2Kap-8-4uECj2HRvCnZbgvmhad8xouQ</stringProp>
+              <stringProp name="-1903095548">eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzQ2MzcxNzU0LCJleHAiOjE3NDY0NDM3NTR9.QugRV2NATgIz2Kap-8-4uECj2HRvCnZbgvmhad8xouQ</stringProp>
+              <stringProp name="1716217">8089</stringProp>
+            </collectionProp>
+          </collectionProp>
+          <boolProp name="UserParameters.per_iteration">false</boolProp>
+        </UserParameters>
+        <hashTree/>
+        <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="JSR223 PreProcessor">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">// --- Load and cache the CSV once ---
+if (vars.getObject(&apos;accountData&apos;) == null) {
+    def file = new File(vars.get(&apos;accountsCsvPath&apos;))
+    def lines = file.readLines().findAll { it.trim() }
+    def header = lines[0].split(&apos;,&apos;).collect { it.trim() }
+    def accountIdx = header.indexOf(&apos;account_number&apos;)
+    def ifscIdx    = header.indexOf(&apos;ifscCode&apos;)
+    def statusIdx  = header.indexOf(&apos;status&apos;)
+    // parse all rows
+    def allRows = lines[1..-1].collect { it.split(&apos;,&apos;).collect { it.trim() } }
+    // filter to only ACTIVE accounts
+    def activeRows = allRows.findAll { it[statusIdx].equalsIgnoreCase(&apos;ACTIVE&apos;) }
+    // cache both for reuse
+    vars.putObject(&apos;activeAccountData&apos;, activeRows)
+    vars.putObject(&apos;accountIndex&apos;,       accountIdx)
+    vars.putObject(&apos;ifscIndex&apos;,          ifscIdx)
+}
+
+// --- grab from memory ---
+def dataRows   = vars.getObject(&apos;activeAccountData&apos;)
+def accountIdx = vars.getObject(&apos;accountIndex&apos;)
+def ifscIdx    = vars.getObject(&apos;ifscIndex&apos;)
+
+// --- pick two distinct random ACTIVE accounts ---
+def rnd = new Random()
+def fromRow = dataRows[rnd.nextInt(dataRows.size())]
+def toRow   = fromRow
+while (toRow == fromRow) {
+    toRow = dataRows[rnd.nextInt(dataRows.size())]
+}
+
+// --- set JMeter variables for your JSON body ---
+vars.put(&apos;fromAccount&apos;,   fromRow[accountIdx])
+vars.put(&apos;fromIFSCCode&apos;,  fromRow[ifscIdx])
+vars.put(&apos;toAccount&apos;,     toRow[accountIdx])
+vars.put(&apos;toIFSCCode&apos;,    toRow[ifscIdx])
+
+// --- derive bank prefix (first 3 chars of IFSC) ---
+def prefix = fromRow[ifscIdx].substring(0,3)
+
+// --- lookup port &amp; token, with fallback ---
+def port  = vars.get(prefix + &apos;_PORT&apos;)     ?: vars.get(&apos;DEFAULT_PORT&apos;)
+def token = vars.get(prefix + &apos;_TOKEN&apos;)    ?: vars.get(&apos;DEFAULT_TOKEN&apos;)
+
+// --- export to JMeter vars ---
+vars.put(&apos;PORT&apos;,       port.toString())
+vars.put(&apos;AUTH_TOKEN&apos;, token)
+
+</stringProp>
+        </JSR223PreProcessor>
+        <hashTree/>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Authorization</stringProp>
+              <stringProp name="Header.value">Bearer ${AUTH_TOKEN}</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Content-Type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request">
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/transactions</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+  &quot;fromAccount&quot;:  &quot;${fromAccount}&quot;,&#xd;
+  &quot;toAccount&quot;:    &quot;${toAccount}&quot;,&#xd;
+  &quot;fromIFSCCode&quot;: &quot;${fromIFSCCode}&quot;,&#xd;
+  &quot;toIFSCCode&quot;:   &quot;${toIFSCCode}&quot;,&#xd;
+  &quot;amount&quot;:       &quot;2&quot;&#xd;
+}&#xd;
+</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename">/home/najm/TestResultsMC/results.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
